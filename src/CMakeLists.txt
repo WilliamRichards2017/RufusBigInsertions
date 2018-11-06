@@ -8,6 +8,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 
 add_library(rufus_big_insertions_core STATIC
 	contigs.cpp
+	util.cpp
 )
 
 set(CORE_LIB rufus_big_insertions_core CACHE STRING "")

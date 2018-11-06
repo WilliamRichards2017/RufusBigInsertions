@@ -1,3 +1,4 @@
+#include <cmath>
 #include <stdexcept>
 #include <stdlib.h>
 #include <string>
@@ -12,15 +13,27 @@
 contigs::contigs(const std::string & contigPath) : contigPath_(contigPath) {
   //splitAlignedContigs_ = {};
   dummyAl_ = {};
-  contigs::findSplitAlignedContigs();
 
-  std::cout << "dummyAl_.Name is " << dummyAl_.Name << std::endl;
+  contigs::findSplitAlignedContigs();
+  contigs::filterSplitAlignedContigs();
+  
+  /* std::cout << "dummyAl_.Name is " << dummyAl_.Name << std::endl;
   if(dummyAl_.Name.compare("") == 0){
     std::cout << "Successfull check for dummy Al" << std::endl;
-  }
+    }*/
+  
+  //contigs::groupNearbyContigs();
 }
 
 contigs::~contigs(){
+}
+
+std::vector<BamTools::BamAlignment> contigs::getInsertionContigs(){
+  return insertionContigs_;
+}
+
+std::vector<BamTools::BamAlignment> contigs::getTransContigs(){
+  return transContigs_;
 }
 
 void contigs::findSplitAlignedContigs(){
@@ -44,20 +57,47 @@ void contigs::findSplitAlignedContigs(){
     exit (EXIT_FAILURE);
   }
 
+  std::vector<int> clipSizes;
+  std::vector<int> readPositions;
+  std::vector<int> genomePositions;
+  
   while(reader.GetNextAlignment(al)){
-    if(al.HasTag("SA")){
+    al.GetSoftClips(clipSizes, readPositions, genomePositions);  
+    if(clipSizes.size() > 0 && al.Position != -1){
       std::cout << "found split aligned contig " << al.Name << std::endl;
       splitAlignedContigs_.push_back(al);
     } 
-  }
-  
+  }  
 }
 
-void contigs::groupNearbyContigs(){
-  
-  
+void contigs::filterSplitAlignedContigs(){
 
-  for(const auto & c : splitAlignedContigs_){
+  std::map<std::string, std::pair<BamTools::BamAlignment, int32_t> > contigCountMap;
+
+  for (const auto & c : splitAlignedContigs_){
+    auto it = contigCountMap.find(c.Name);
+      if(it == contigCountMap.end()){
+	contigCountMap.insert({c.Name, std::make_pair(c, 1)});
+      }
+      else{
+	it->second.second++;
+    }
     
+  }
+  std::cout << "inserted " << contigCountMap.size() << "unique contigs into contigCountMap" << std::endl;
+
+  for (const auto & c : contigCountMap){
+
+    if(c.second.second == 1){
+      std::cout << "Found insertion contig" << std::endl;
+      insertionContigs_.push_back(c.second.first);
+    }
+    else if (c.second.second > 1){
+      std::cout << "Found trans contig" << std::endl;
+      transContigs_.push_back(c.second.first);
+    }
+    else {
+      std::cout << "ERROR: found contig with count < 1, skipping contig..." << std::endl;
+    }
   }
 }
