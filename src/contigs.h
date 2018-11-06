@@ -14,8 +14,12 @@ class contigs{
   
  private:
   const std::string & contigPath_;
-  std::vector<BamTools::BamAlignment> contigs_;
-  
-}
+  BamTools::BamAlignment dummyAl_;
+  std::vector<BamTools::BamAlignment>  splitAlignedContigs_;
+  std::map<BamTools::BamAlignment, BamTools::BamAlignment> groupedContigMap_;
+
+  void findSplitAlignedContigs();
+  void groupNearbyContigs();
+};
 
 #endif //__CONTIGS_H__

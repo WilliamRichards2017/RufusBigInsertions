@@ -20,3 +20,7 @@ ExternalProject_Add(${BAMTOOLS_PROJECT}
 ExternalProject_Get_Property(${BAMTOOLS_PROJECT} INSTALL_DIR)
 ExternalProject_Get_Property(${BAMTOOLS_PROJECT} SOURCE_DIR)
 ExternalProject_Get_Property(${BAMTOOLS_PROJECT} BINARY_DIR)
+
+SET(BAMTOOLS_LIB ${SOURCE_DIR}/lib/libbamtools.a CACHE INTERNAL "Bamtools Lib")
+SET(BAMTOOLS_UTIL_LIB ${SOURCE_DIR}/lib/libbamtools-utils.a CACHE INTERNAL "Bamtools-util Lib")
+SET(BAMTOOLS_INCLUDE ${SOURCE_DIR}/include CACHE INTERNAL "Bamtools Include")
