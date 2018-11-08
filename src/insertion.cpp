@@ -18,16 +18,66 @@ insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignm
 
   if(clipDirectionsConverge_){
     std::cout << "found clip dir convergence near " << util::getChromosomeFromRefID(groupedContigs_.first.RefID, refData_) << ":" << groupedContigs_.first.Position <<  "and " << util::getChromosomeFromRefID(groupedContigs_.second.RefID, refData_) << ":" << groupedContigs_.second.Position << std::endl;
-
+    
   }
-
+  
   insertion::setRegions();
+  insertion::findAllSupportingReads();
 }
 
 insertion::~insertion(){
+  //get destructed
 }
 
 void insertion::findAllSupportingReads(){
+  leftSupportingReads_ = insertion::findSupportingReads(leftRegion_);
+  rightSupportingReads_ = insertion::findSupportingReads(rightRegion_);
+}
+
+const std::vector<BamTools::BamAlignment>  insertion::findSupportingReads(const BamTools::BamRegion & region){
+
+  std::vector<BamTools::BamAlignment> supportingReads;
+  
+  BamTools::BamReader reader;
+  BamTools::BamAlignment al;
+
+  if(!reader.Open(contigPath_)){
+    std::cout << "Could not open contig Bam path in insertion::findSupportingReads for " << contigPath_ << std::endl;
+    std::cout << "Exiting run with non-zero status..." << std::endl;
+    reader.Close();
+    exit(EXIT_FAILURE);
+  }
+  
+  reader.LocateIndex();
+
+  if(!reader.HasIndex()){
+    std::cout << "Index for " << contigPath_ << " could not be opened in insertion::findSupportingReads()" << std::endl;
+    std::cout << "Exiting run with non-zero status..." << std::endl;
+    reader.Close();
+    exit(EXIT_FAILURE);
+
+  }
+
+  if(!reader.SetRegion(region)){
+    std::cout << "Region for " << contigPath_ << " could not be set in insertion::findSupportingReads()" << std::endl;
+    std::cout << "Exiting run with non-zero status..." << std::endl;
+    reader.Close();
+    exit(EXIT_FAILURE);
+  }
+
+  std::vector<int> clipSizes;
+  std::vector<int> readPositions;
+  std::vector<int> genomePositions;
+
+  while(reader.GetNextAlignment(al)){
+    al.GetSoftClips(clipSizes, readPositions, genomePositions);
+
+    if(clipSizes.size() > 0){
+      supportingReads.push_back(al);
+    }
+  }
+  std::cout << "Found " << supportingReads.size() << " supporting reads in region" << std::endl;
+  return supportingReads;
 }
 
 void insertion::setRegions(){
@@ -52,4 +102,8 @@ void insertion::findClipDirections(){
   }
   clipDirectionsConverge_ = firstReadRightBound_ && secondReadLeftBound_;
   std::cout << "clipDirectionsConverge_ = " << clipDirectionsConverge_ << std::endl;
+}
+
+bool insertion::matchBreakpoints(){
+  
 }
