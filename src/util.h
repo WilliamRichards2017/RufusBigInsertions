@@ -14,6 +14,10 @@ class util{
   static std::vector<std::pair<BamTools::BamAlignment, BamTools::BamAlignment> > groupNearbyContigs(const std::vector<BamTools::BamAlignment> &, const int32_t &);
 
 
+  static std::vector<BamTools::RefData> populateRefData(const std::string &);
+  static std::string getChromosomeFromRefID(const int32_t &, const std::vector<BamTools::RefData> &);
+
+
  private:
   
 };
