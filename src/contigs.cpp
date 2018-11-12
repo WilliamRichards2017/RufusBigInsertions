@@ -64,14 +64,16 @@ void contigs::findSplitAlignedContigs(){
   while(reader.GetNextAlignment(al)){
     al.GetSoftClips(clipSizes, readPositions, genomePositions);  
     if(clipSizes.size() > 0 && al.Position != -1){
+      //if(al.Name == "NODE_INS.1001-5000.Child.bam.generator.V2_998_L350_D12:15:4::MH0" || al.Name == "NODE_INS.1001-5000.Child.bam.generator.V2_996_L595_D18:28:6::MH0"){
       std::cout << "found split aligned contig " << al.Name << std::endl;
       splitAlignedContigs_.push_back(al);
+      //}
     } 
   }  
 }
 
 void contigs::filterSplitAlignedContigs(){
-
+  
   std::map<std::string, std::pair<BamTools::BamAlignment, int32_t> > contigCountMap;
 
   for (const auto & c : splitAlignedContigs_){

@@ -61,7 +61,7 @@ const std::vector<int32_t> util::getInsertionVec(const BamTools::BamAlignment & 
   return insertionVec;
 }
 
-parsedContig util::parseContig(const BamTools::BamAlignment & al){
+const parsedContig util::parseContig(const BamTools::BamAlignment & al){
   parsedContig contig;
   contig.al = al;
 
@@ -71,26 +71,95 @@ parsedContig util::parseContig(const BamTools::BamAlignment & al){
   al.GetSoftClips(clipSizes, readPositions, genomePositions);
 
   std::vector<int32_t> insertionVec = util::getInsertionVec(al);
-  contig.globalClippedCoords = util::findGlobalClipCoords(al.CigarData, al.Position);
-
-  
-
-  std::cout << "Looping through contigClipCoords" << std::endl;
-  for(const auto cc : contig.globalClippedCoords){
-    std::cout << "Clip coords are: " << cc.first << ", " << cc.second << std::endl;
-  }
-
 
   for(unsigned i = 0; i < readPositions.size(); ++i){
     std::string parsedClip = al.QueryBases.substr(readPositions[i]+insertionVec[i], clipSizes[i]);
-    //std::cout << "parsedClip is " << parsedClip << std::endl;
+    contig.clips.push_back(parsedClip);
   }
   return contig;
 }
 
+const int32_t util::longestCommonSubstr(const std::string & X, const std::string & Y){
+  int m = X.size();
+  int n = Y.size();
+
+  int LCSuff[m + 1][n + 1]; 
+  int len = 0; 
+  int row, col; 
+  
+  /* Following steps build LCSuff[m+1][n+1] in bottom 
+     up fashion. */
+  for (int i = 0; i <= m; i++) { 
+    for (int j = 0; j <= n; j++) { 
+      if (i == 0 || j == 0) 
+	LCSuff[i][j] = 0; 
+  
+      else if (X[i - 1] == Y[j - 1]) { 
+	LCSuff[i][j] = LCSuff[i - 1][j - 1] + 1; 
+	if (len < LCSuff[i][j]) { 
+	  len = LCSuff[i][j]; 
+	  row = i; 
+	  col = j; 
+	} 
+      } 
+      else
+	LCSuff[i][j] = 0; 
+    } 
+  } 
+  return len; 
+} 
+
+
+const int32_t util::findLongestClipMatch(const std::vector<std::string> & clips, const parsedContig & contig){
+  int32_t longestMatch = 0;
+
+  for(auto & clip1 : clips){
+    for(auto & clip2 : contig.clips){
+      std::cout << "comparing " << clip1 << " and " << clip2 << std::endl;
+      int32_t longestSubstr = util::longestCommonSubstr(clip1, clip2);
+      if(longestSubstr > longestMatch){
+	longestMatch = longestSubstr;
+      }
+    }
+  }
+  
+  std::cout << "longest clip match is " << longestMatch << std::endl;
+  return longestMatch;
+}
+
+const readEvidence util::parseRead(const BamTools::BamAlignment & al, const parsedContig & contig){
+  int32_t largestRefM = 0;
+  readEvidence RE;
+  RE.al = al;
+  
+  std::vector<int> clipSizes;
+  std::vector<int> readPositions;
+  std::vector<int> genomePositions;
+  al.GetSoftClips(clipSizes, readPositions, genomePositions);
+
+  std::vector<int32_t> insertionVec = util::getInsertionVec(al);
+
+  for(unsigned i = 0; i < readPositions.size(); ++i){
+    std::string parsedClip = al.QueryBases.substr(readPositions[i]+insertionVec[i], clipSizes[i]);
+    RE.clips.push_back(parsedClip);
+  }
+
+  for(const auto c : al.CigarData){
+    if(c.Type == 'M'){
+      if(c.Length > largestRefM){
+	largestRefM = c.Length;
+      }
+    }
+  }
+
+  RE.longestClipMatch = util::findLongestClipMatch(RE.clips, contig);
+  RE.longestRefMatch = largestRefM;
+  return RE;
+}
+
 const std::vector<std::pair<int32_t, int32_t> > util::findGlobalClipCoords(const std::vector<BamTools::CigarOp> & cigar, int32_t globalPos){
   std::vector<std::pair<int32_t, int32_t> > clipCoords;
-
+  std::cout << "Global start pos is: " << globalPos << std::endl;
   for(const auto it : cigar){
     if(it.Type == 'S'){
       clipCoords.push_back(std::make_pair(globalPos, globalPos+it.Length));

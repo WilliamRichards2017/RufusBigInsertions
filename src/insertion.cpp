@@ -17,13 +17,16 @@ insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignm
   insertion::findClipDirections();
 
   if(clipDirectionsConverge_){
-    std::cout << "found clip dir convergence near " << util::getChromosomeFromRefID(groupedContigs_.first.RefID, refData_) << ":" << groupedContigs_.first.Position <<  "and " << util::getChromosomeFromRefID(groupedContigs_.second.RefID, refData_) << ":" << groupedContigs_.second.Position << std::endl;
+    //    std::cout << "found clip dir convergence near " << util::getChromosomeFromRefID(groupedContigs_.first.RefID, refData_) << ":" << groupedContigs_.first.Position <<  "and " << util::getChromosomeFromRefID(groupedContigs_.second.RefID, refData_) << ":" << groupedContigs_.second.Position << std::endl;
     
   }
   insertion::setRegions();
   insertion::findAllSupportingReads();
   parsedContig lContig = util::parseContig(groupedContigs_.first);
   parsedContig rContig = util::parseContig(groupedContigs_.second);
+
+  readEvidence l = util::parseRead(groupedContigs_.first, lContig);
+  readEvidence r = util::parseRead(groupedContigs_.second, rContig);
 
   bool breakpointMatch = insertion::matchBreakpoints(lContig, rContig);
 
@@ -114,20 +117,9 @@ void insertion::findClipDirections(){
 }
 
 bool insertion::matchBreakpoints(const parsedContig lcontig, const parsedContig rcontig){
-
-
-  for(int i = 0; i < lcontig.globalClippedCoords.size(); ++i){
-    for(int j = 0; j < rcontig.globalClippedCoords.size(); ++j){
-
-      //std::cout << "Comparing " << lcontig.globalClippedCoords[i].second << " and " << rcontig.globalClippedCoords[j].second+1 << std::endl;
-
-      std::cout << "Left clip coords are " << lcontig.globalClippedCoords[i].first << ", " << lcontig.globalClippedCoords[i].second << std::endl;
-      std::cout << "Right clip coords are " << rcontig.globalClippedCoords[j].first << ", " << rcontig.globalClippedCoords[j].second << std::endl;
-      if(lcontig.globalClippedCoords[i].first == rcontig.globalClippedCoords[j].first){
-	std::cout << "FOUND MATCH IN BREAKPOINTS!!!" << std::endl;
-	return true;
-      }
-    }
+  if (std::abs(lcontig.al.GetEndPosition() - rcontig.al.Position) < 7){
+    std::cout << "Found breakpoint match at " << rcontig.al.Position << std::endl;
+    return true;
   }
-  return false;  
+  return false;
 }
