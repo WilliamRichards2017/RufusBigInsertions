@@ -10,8 +10,6 @@
 std::vector<std::pair<BamTools::BamAlignment, BamTools::BamAlignment> > util::groupNearbyContigs(const std::vector<BamTools::BamAlignment> & splitAlignedContigs, const int32_t & maxDist){
 
   std::vector<std::pair<BamTools::BamAlignment, BamTools::BamAlignment> > groupedContigs;
-
-  
   BamTools::BamAlignment previousAl;
   for(const auto & c : splitAlignedContigs){
     //    std::cout << "comparing previous position " << previousAl.RefID << ":" << previousAl.Position << " with current position " << c.RefID << ":" << c.Position << std::endl;
@@ -73,11 +71,32 @@ parsedContig util::parseContig(const BamTools::BamAlignment & al){
   al.GetSoftClips(clipSizes, readPositions, genomePositions);
 
   std::vector<int32_t> insertionVec = util::getInsertionVec(al);
+  contig.globalClippedCoords = util::findGlobalClipCoords(al.CigarData, al.Position);
+
+  
+
+  std::cout << "Looping through contigClipCoords" << std::endl;
+  for(const auto cc : contig.globalClippedCoords){
+    std::cout << "Clip coords are: " << cc.first << ", " << cc.second << std::endl;
+  }
 
 
   for(unsigned i = 0; i < readPositions.size(); ++i){
     std::string parsedClip = al.QueryBases.substr(readPositions[i]+insertionVec[i], clipSizes[i]);
-    std::cout << "parsedClip is " << parsedClip << std::endl;
+    //std::cout << "parsedClip is " << parsedClip << std::endl;
   }
-  
+  return contig;
 }
+
+const std::vector<std::pair<int32_t, int32_t> > util::findGlobalClipCoords(const std::vector<BamTools::CigarOp> & cigar, int32_t globalPos){
+  std::vector<std::pair<int32_t, int32_t> > clipCoords;
+
+  for(const auto it : cigar){
+    if(it.Type == 'S'){
+      clipCoords.push_back(std::make_pair(globalPos, globalPos+it.Length));
+    }
+    globalPos += it.Length;
+  }
+  return clipCoords;
+}
+

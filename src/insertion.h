@@ -10,6 +10,8 @@
 #include "api/BamMultiReader.h"
 #include "api/BamWriter.h"
 
+#include "util.h"
+
 struct breakpoint{
   int32_t refID;
   std::pair<int32_t, int32_t> positions;
@@ -40,8 +42,12 @@ class insertion{
   std::vector<BamTools::BamAlignment> leftSupportingReads_;
   std::vector<BamTools::BamAlignment> rightSupportingReads_;
 
+  const std::vector<BamTools::BamAlignment> findSupportingReads(const BamTools::BamRegion &);
   void findAllSupportingReads();
+  bool matchBreakpoints(const parsedContig, const parsedContig);
   breakpoint insertionBreakPoints_;
+  
+  
   
 };
 
