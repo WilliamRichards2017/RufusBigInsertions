@@ -10,30 +10,30 @@
 #include "insertion.h"
 #include "util.h"
 
-insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignment> & groupedContigs, const std::string & contigPath) : groupedContigs_(groupedContigs), contigPath_(contigPath){
+insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignment> & groupedContigs, const std::string & contigPath, const std::string & bamPath) : groupedContigs_(groupedContigs), contigPath_(contigPath), bamPath_(bamPath){
 
   refData_ = util::populateRefData(contigPath_);
 
   insertion::findClipDirections();
-
+  
   if(clipDirectionsConverge_){
-    //    std::cout << "found clip dir convergence near " << util::getChromosomeFromRefID(groupedContigs_.first.RefID, refData_) << ":" << groupedContigs_.first.Position <<  "and " << util::getChromosomeFromRefID(groupedContigs_.second.RefID, refData_) << ":" << groupedContigs_.second.Position << std::endl;
+
+    auto lContig = util::parseContig(groupedContigs_.first);
+    auto rContig = util::parseContig(groupedContigs_.second);
+    bool breakpointMatch = insertion::matchBreakpoints(lContig, rContig);
     
-  }
-  insertion::setRegions();
-  insertion::findAllSupportingReads();
-  parsedContig lContig = util::parseContig(groupedContigs_.first);
-  parsedContig rContig = util::parseContig(groupedContigs_.second);
-
-  readEvidence l = util::parseRead(groupedContigs_.first, lContig);
-  readEvidence r = util::parseRead(groupedContigs_.second, rContig);
-
-  bool breakpointMatch = insertion::matchBreakpoints(lContig, rContig);
-
-  if(breakpointMatch){
-    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
-    std::cout << "FOUND BREAKPOINT MATCH" << std::endl;
-    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+    if(breakpointMatch){
+      std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+      std::cout << "FOUND BREAKPOINT MATCH" << std::endl;
+      std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+      
+      insertion::setBreakpointRegion();
+      insertion::findReadsOverlappingBreakpoint();
+      for(const auto r : overlappingReads_){
+	readEvidence left = util::parseRead(r, lContig);
+	readEvidence right = util::parseRead(r, rContig);
+      }
+    }
   }
 }
 
@@ -41,20 +41,14 @@ insertion::~insertion(){
   //get destructed
 }
 
-void insertion::findAllSupportingReads(){
-  leftSupportingReads_ = insertion::findSupportingReads(leftRegion_);
-  rightSupportingReads_ = insertion::findSupportingReads(rightRegion_);
-}
 
-const std::vector<BamTools::BamAlignment>  insertion::findSupportingReads(const BamTools::BamRegion & region){
+void insertion::findReadsOverlappingBreakpoint(){
 
-  std::vector<BamTools::BamAlignment> supportingReads;
-  
   BamTools::BamReader reader;
   BamTools::BamAlignment al;
 
-  if(!reader.Open(contigPath_)){
-    std::cout << "Could not open contig Bam path in insertion::findSupportingReads for " << contigPath_ << std::endl;
+  if(!reader.Open(bamPath_)){
+    std::cout << "Could not open Bam path in insertion::findSupportingReads for " << contigPath_ << std::endl;
     std::cout << "Exiting run with non-zero status..." << std::endl;
     reader.Close();
     exit(EXIT_FAILURE);
@@ -63,15 +57,15 @@ const std::vector<BamTools::BamAlignment>  insertion::findSupportingReads(const 
   reader.LocateIndex();
 
   if(!reader.HasIndex()){
-    std::cout << "Index for " << contigPath_ << " could not be opened in insertion::findSupportingReads()" << std::endl;
+    std::cout << "Index for " << bamPath_ << " could not be opened in insertion::findSupportingReads()" << std::endl;
     std::cout << "Exiting run with non-zero status..." << std::endl;
     reader.Close();
     exit(EXIT_FAILURE);
 
   }
 
-  if(!reader.SetRegion(region)){
-    std::cout << "Region for " << contigPath_ << " could not be set in insertion::findSupportingReads()" << std::endl;
+  if(!reader.SetRegion(breakpointRegion_)){
+    std::cout << "Region for " << bamPath_ << " could not be set in insertion::findSupportingReads()" << std::endl;
     std::cout << "Exiting run with non-zero status..." << std::endl;
     reader.Close();
     exit(EXIT_FAILURE);
@@ -85,17 +79,15 @@ const std::vector<BamTools::BamAlignment>  insertion::findSupportingReads(const 
     al.GetSoftClips(clipSizes, readPositions, genomePositions);
 
     if(clipSizes.size() > 0){
-      supportingReads.push_back(al);
+      overlappingReads_.push_back(al);
     }
   }
-  std::cout << "Found " << supportingReads.size() << " supporting reads in region" << std::endl;
-  return supportingReads;
+  std::cout << "Found " << overlappingReads_.size() << " supporting reads in region" << std::endl;
 }
 
-void insertion::setRegions(){
+void insertion::setBreakpointRegion(){
 
-  leftRegion_ = BamTools::BamRegion(groupedContigs_.first.RefID, groupedContigs_.first.Position, groupedContigs_.first.RefID, groupedContigs_.first.GetEndPosition());
-  rightRegion_ = BamTools::BamRegion(groupedContigs_.second.RefID, groupedContigs_.second.Position, groupedContigs_.second.RefID, groupedContigs_.second.GetEndPosition());
+  breakpointRegion_ = BamTools::BamRegion(breakpointPos_.first, breakpointPos_.second, breakpointPos_.first, breakpointPos_.second);
 }
 
 void insertion::findClipDirections(){
@@ -118,7 +110,8 @@ void insertion::findClipDirections(){
 
 bool insertion::matchBreakpoints(const parsedContig lcontig, const parsedContig rcontig){
   if (std::abs(lcontig.al.GetEndPosition() - rcontig.al.Position) < 7){
-    std::cout << "Found breakpoint match at " << rcontig.al.Position << std::endl;
+    breakpointPos_ = std::make_pair(rcontig.al.RefID, rcontig.al.Position);
+    //std::cout << "Found breakpoint match at " << rcontig.al.Position << std::endl;
     return true;
   }
   return false;

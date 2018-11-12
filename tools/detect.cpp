@@ -13,6 +13,7 @@
 
 int main(int argc, char * argv[]){
   std::string contigPath = std::string(argv[1]);
+  std::string bamPath = std::string(argv[2]);
 
   int32_t maxDist = 5000;
 
@@ -22,7 +23,7 @@ int main(int argc, char * argv[]){
   std::vector<std::pair<BamTools::BamAlignment, BamTools::BamAlignment> > groupedTransContigs = util::groupNearbyContigs(c.getTransContigs(), maxDist);
 
   for(const auto & c : groupedInsertionContigs){
-    insertion i = {c, contigPath};
+    insertion i = {c, contigPath, bamPath};
   }
   return 0;
 }
