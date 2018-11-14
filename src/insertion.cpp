@@ -10,7 +10,7 @@
 #include "insertion.h"
 #include "util.h"
 
-insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignment> & groupedContigs, const std::string & contigPath, const std::string & probandJhashPath) : groupedContigs_(groupedContigs), contigPath_(contigPath), probandJhashPath_(probandJhashPath){
+insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignment> & groupedContigs, const std::string & contigPath, const std::string & contigKmerPath) : groupedContigs_(groupedContigs), contigPath_(contigPath), contigKmerPath_(contigKmerPath){
 
   refData_ = util::populateRefData(contigPath_);
 
@@ -26,11 +26,18 @@ insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignm
     std::vector<std::string> leftSeqKmers = util::kmerize(lContig.al.QueryBases, 25);
     std::vector<std::string> rightSeqKmers = util::kmerize(rContig.al.QueryBases, 25);
 
-    std::map<std::string, int32_t> lKmerCounts = util::countKmers(probandJhashPath_, leftSeqKmers);
-    std::map<std::string, int32_t> rKmerCounts = util::countKmers(probandJhashPath_, rightSeqKmers);
+    // std::map<std::string, int32_t> lKmerCounts = util::countKmers(probandJhashPath_, leftSeqKmers);
+    //std::map<std::string, int32_t> rKmerCounts = util::countKmers(probandJhashPath_, rightSeqKmers);
 
-    
-  }
+    std::vector<std::pair<std::string, int32_t> > lKmerCounts = util::countKmersFromText(contigKmerPath_, leftSeqKmers);
+    std::vector<std::pair<std::string, int32_t> > rKmerCounts = util::countKmersFromText(contigKmerPath_, rightSeqKmers);
+
+
+    std::cout << "Printing out kmer counts for seq: " << lContig.al.QueryBases << std::endl;
+    for(auto l : lKmerCounts){
+      std::cout << "kmer is: " << l.first << "  count is: " << l.second << std::endl;
+    }
+   }
 }
 
 

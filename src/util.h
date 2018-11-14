@@ -24,6 +24,7 @@ struct readEvidence{
 class util{
  public:
   static std::string exec(char const*);
+  static const std::string revComp(const std::string);
   static std::vector<std::pair<BamTools::BamAlignment, BamTools::BamAlignment> > groupNearbyContigs(const std::vector<BamTools::BamAlignment> &, const int32_t &);
   static const parsedContig parseContig(const BamTools::BamAlignment & al);
   static const readEvidence parseRead(const BamTools::BamAlignment &, const parsedContig &);
@@ -34,7 +35,9 @@ class util{
   static const std::vector<std::pair<int32_t, int32_t> > findGlobalClipCoords(const std::vector<BamTools::CigarOp> &, const int32_t);
   static const int32_t longestCommonSubstr(const std::string &, const std::string &);
   static const std::vector<std::string> kmerize(const std::string &, const int32_t);
-  static const std::map<std::string, int32_t> countKmers(const std::string &, const std::vector<std::string> &);
+  static const std::map<std::string, int32_t> countKmersFromJhash(const std::string &, const std::vector<std::string> &);
+  static const std::vector<std::pair<std::string, int32_t> > countKmersFromText(const std::string &, const std::vector<std::string> &);
+
 
 
 

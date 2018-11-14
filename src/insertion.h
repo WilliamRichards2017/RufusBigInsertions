@@ -19,8 +19,8 @@ class insertion{
 
  private:
 
-  std::string probandJhashPath_;
   std::string contigPath_;
+  std::string contigKmerPath_;
   std::pair<BamTools::BamAlignment, BamTools::BamAlignment > groupedContigs_;
   std::vector<BamTools::RefData> refData_;
   int32_t distance_ = 1000;

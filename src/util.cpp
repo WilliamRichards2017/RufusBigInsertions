@@ -206,7 +206,7 @@ std::string util::exec(char const* cmd) {
   return result;
 }
 
-const std::map<std::string, int32_t> util::countKmers(const std::string & jhashPath, const std::vector<std::string> & kmers){
+const std::map<std::string, int32_t> util::countKmersFromJhash(const std::string & jhashPath, const std::vector<std::string> & kmers){
   std::string jellyfishPath = "/uufs/chpc.utah.edu/common/home/u0401321/RUFUS/src/externals/jellyfish-2.2.5/bin/jellyfish";
   
   std::map<std::string, int32_t> ret;
@@ -216,7 +216,7 @@ const std::map<std::string, int32_t> util::countKmers(const std::string & jhashP
     //std::cout << "executing command: " << cmd << std::endl;
     
     std::string queryOutput = util::exec(cmd.c_str());
-    std::cout << "command output is: " << queryOutput << std::endl;
+    //std::cout << "command output is: " << queryOutput << std::endl;
     std::istringstream iss(queryOutput);
     std::vector<std::string> kmerCount((std::istream_iterator<std::string>(iss)),
 				       std::istream_iterator<std::string>());
@@ -226,4 +226,58 @@ const std::map<std::string, int32_t> util::countKmers(const std::string & jhashP
     }
   }
   return ret;
+}
+
+const std::string util::revComp (const std::string sequence){
+  std::string newString = "";
+  //cout << "Start - " << Sequence << "\n";
+  for(int i = sequence.size()-1; i>=0; i+= -1) {
+    char C = sequence.c_str()[i];
+    if (C == 'A')
+      {newString += 'T';}
+    else if (C == 'C')
+      {newString += 'G';}
+    else if (C == 'G')
+      {newString += 'C';}
+    else if (C == 'T')
+      {newString += 'A';}
+    else if (C == 'N')
+      {newString += 'N';}
+    else {std::cout << "ERROR IN RevComp - " << C << std::endl;}
+  }
+  return newString;
+}
+
+const std::vector<std::pair<std::string, int32_t> > util::countKmersFromText(const std::string & textPath, const std::vector<std::string> & kmers){
+  std::ifstream file(textPath);
+  std::string line;
+
+
+  std::vector<std::pair<std::string, int32_t> > kmerCounts;
+  std::map<std::string, int32_t> kmerMap;
+
+  while(std::getline(file, line)){
+    std::istringstream iss(line);
+    std::vector<std::string> kmerCount((std::istream_iterator<std::string>(iss)), std::istream_iterator<std::string>());
+    if(kmerCount.size() == 2){
+      kmerMap.insert({kmerCount[0], atoi(kmerCount[1].c_str())});
+      //kmerCounts.push_back(std::make_pair(kmerCount[0], atoi(kmerCount[1].c_str())));
+      //std::cout << "kmer " << kmerCount[0] << " has count " << kmerCount[1] << std::endl;
+    }
+  }
+
+  for(auto k : kmers){
+    auto it = kmerMap.find(k);
+    auto revIt = kmerMap.find(util::revComp(k));
+    if(it != kmerMap.end()){
+      kmerCounts.push_back(std::make_pair(it->first, it->second));
+    }
+    else if(revIt != kmerMap.end()){
+      kmerCounts.push_back(std::make_pair(k, revIt->second));
+    }
+    else{
+      kmerCounts.push_back(std::make_pair(k, 0));
+    }
+  }
+  return kmerCounts;
 }
