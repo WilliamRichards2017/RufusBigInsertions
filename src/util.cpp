@@ -1,3 +1,10 @@
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <iterator>
+#include <stdexcept>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string>
 #include <utility>
 #include <vector>
@@ -169,3 +176,54 @@ const std::vector<std::pair<int32_t, int32_t> > util::findGlobalClipCoords(const
   return clipCoords;
 }
 
+const std::vector<std::string> util::kmerize(const std::string & sequence, const int32_t kmerSize){
+  int32_t kmercount = 0;
+  std::vector<std::string> kmers;
+
+  while(kmercount + kmerSize <= sequence.length()){
+    std::string kmer = sequence.substr(kmercount, kmerSize);
+    kmers.push_back(kmer);
+    ++kmercount;
+  }
+  return kmers;
+}
+
+std::string util::exec(char const* cmd) {
+  char buffer[128];
+  std::string result = "";
+  FILE* pipe = popen(cmd, "r");
+  if (!pipe) throw std::runtime_error("popen() failed!");
+  try {
+    while (!feof(pipe)) {
+      if (fgets(buffer, 128, pipe) != NULL)
+	result += buffer;
+    }
+  } catch (...) {
+    pclose(pipe);
+    throw;
+  }
+  pclose(pipe);
+  return result;
+}
+
+const std::map<std::string, int32_t> util::countKmers(const std::string & jhashPath, const std::vector<std::string> & kmers){
+  std::string jellyfishPath = "/uufs/chpc.utah.edu/common/home/u0401321/RUFUS/src/externals/jellyfish-2.2.5/bin/jellyfish";
+  
+  std::map<std::string, int32_t> ret;
+  for (const auto & kmer : kmers){
+
+    std::string cmd = jellyfishPath + " query " + jhashPath + " " + kmer;
+    //std::cout << "executing command: " << cmd << std::endl;
+    
+    std::string queryOutput = util::exec(cmd.c_str());
+    std::cout << "command output is: " << queryOutput << std::endl;
+    std::istringstream iss(queryOutput);
+    std::vector<std::string> kmerCount((std::istream_iterator<std::string>(iss)),
+				       std::istream_iterator<std::string>());
+
+    if(kmerCount.size() == 2){
+      ret.insert({kmerCount[0], atoi(kmerCount[1].c_str())});
+    }
+  }
+  return ret;
+}
