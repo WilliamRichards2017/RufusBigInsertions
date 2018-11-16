@@ -24,22 +24,16 @@ insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignm
     auto rContig = util::parseContig(groupedContigs_.first);
     
     insertion::setBreakpoints(lContig, rContig);
-    
-    std::vector<std::string> leftSeqKmers = util::kmerize(lContig.al.QueryBases, 25);
-    std::vector<std::string> rightSeqKmers = util::kmerize(rContig.al.QueryBases, 25);
-
-    // std::map<std::string, int32_t> lKmerCounts = util::countKmers(probandJhashPath_, leftSeqKmers);
-    //std::map<std::string, int32_t> rKmerCounts = util::countKmers(probandJhashPath_, rightSeqKmers);
-
-    std::vector<std::pair<std::string, int32_t> > lKmerCounts = util::countKmersFromText(contigKmerPath_, leftSeqKmers);
-    std::vector<std::pair<std::string, int32_t> > rKmerCounts = util::countKmersFromText(contigKmerPath_, rightSeqKmers);
-
     insertion::setVariant();
-    insertion::setKmerDepth(lKmerCounts, rKmerCounts);
-    std::cout << "Kmer Depth is: ";
-    for(const auto & k : kmerDepth_){
-      std::cout << k << '-';
-    }
+    
+    std::vector<std::string> varSeqKmers = util::kmerize(variant_.alt, 25);
+
+    std::vector<std::pair<std::string, int32_t> > varKmerCounts = util::countKmersFromText(contigKmerPath_, varSeqKmers);
+
+
+
+    insertion::setKmerDepth(varKmerCounts);
+
     std::cout << std::endl;
 
     /*std::cout << "Printing out kmer counts for seq: " << lContig.al.QueryBases << std::endl;
@@ -54,18 +48,18 @@ insertion::~insertion(){
   //get destructed
 }
 
-const std::string insertion::getVariant(){
+const variant insertion::getVariant(){
   return variant_;
 }
 
-void insertion::setKmerDepth(const std::vector<std::pair<std::string, int32_t> > & lKmerCounts, const std::vector<std::pair<std::string, int32_t> > & rKmerCounts){
-  for(const auto & l : lKmerCounts){
-    kmerDepth_.push_back(l.second);
-  }
-  for(const auto & r : rKmerCounts){
-    kmerDepth_.push_back(r.second);
-  }
+void insertion::setKmerDepth(const std::vector<std::pair<std::string, int32_t> > & kmerCounts){
   
+  std::cout << "kmerDepth is: " << std::endl;
+  for(const auto & k : kmerCounts){
+    std::cout <<k.first[0] << ":" << k.second << "-";
+    kmerDepth_.push_back(k.second);
+  }  
+  std::cout << std::endl;
 }
 
 void insertion::setVariant(){
@@ -81,10 +75,9 @@ void insertion::setVariant(){
   std::cout << "Left clip is: " << leftClip << std::endl;
   std::cout << "Right clip is: " << rightClip << std::endl;
 
-  ref_ = refChar;
-  variant_ = refChar + leftClip + "NNNNN...NNNNN" + rightClip;
+  variant_ = {refChar, refChar + leftClip + "NNNNNNNNNN" + rightClip};
   
-  std::cout << "Variant is: " << std::endl << variant_ << std::endl;
+  std::cout << "Variant is: " << std::endl << variant_.ref << "->" << variant_.alt << std::endl;
 }
 
 void setKmerDepth(){

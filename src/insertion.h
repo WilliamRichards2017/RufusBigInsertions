@@ -12,17 +12,21 @@
 
 #include "util.h"
 
+struct variant{
+  std::string ref;
+  std::string alt;
+};
+
 class insertion{
  public:
   insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignment > &, const std::string &, const std::string &);
   ~insertion();
-  const std::string getVariant();
+  const variant  getVariant();
 
  private:
 
   std::string contigPath_;
   std::string contigKmerPath_;
-  std::string variantString_;
   std::pair<BamTools::BamAlignment, BamTools::BamAlignment > groupedContigs_;
   std::vector<BamTools::RefData> refData_;
   int32_t distance_ = 1000;
@@ -30,10 +34,10 @@ class insertion{
   std::pair<int32_t, int32_t> rightBreakpoint_ = {-1, -1};
   bool clipDirectionsConverge_ = false;
 
-  std::string ref_;
-  std::string variant_;
+  variant variant_;
+
   void setVariant();
-  void setKmerDepth(const std::vector<std::pair<std::string, int32_t> > &, const std::vector<std::pair<std::string, int32_t> > &);
+  void setKmerDepth(const std::vector<std::pair<std::string, int32_t> > &);
   std::vector<int32_t> kmerDepth_;
 
   bool firstReadRightBound_ = false;
