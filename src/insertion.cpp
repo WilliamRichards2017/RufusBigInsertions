@@ -25,6 +25,7 @@ insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignm
     
     insertion::setBreakpoints(lContig, rContig);
     insertion::setVariant();
+    insertion::setCigarString();
     
     std::vector<std::string> varSeqKmers = util::kmerize(variant_.alt, 25);
 
@@ -50,6 +51,22 @@ insertion::~insertion(){
 
 const variant insertion::getVariant(){
   return variant_;
+}
+
+const std::string insertion::getCigarString(){
+  return cigarString_;
+}
+
+void insertion::setCigarString(){
+  for(const auto & l : groupedContigs_.first.CigarData){ 
+    cigarString_ += std::to_string(l.Length);
+    cigarString_ += std::to_string(l.Type);
+  }
+  
+  for(const auto & r : groupedContigs_.second.CigarData){
+    cigarString_ += std::to_string(r.Length);
+    cigarString_ += std::to_string(r.Type);
+  }
 }
 
 void insertion::setKmerDepth(const std::vector<std::pair<std::string, int32_t> > & kmerCounts){
@@ -78,10 +95,6 @@ void insertion::setVariant(){
   variant_ = {refChar, refChar + leftClip + "NNNNNNNNNN" + rightClip};
   
   std::cout << "Variant is: " << std::endl << variant_.ref << "->" << variant_.alt << std::endl;
-}
-
-void setKmerDepth(){
-  
 }
 
 void insertion::findClipDirections(){

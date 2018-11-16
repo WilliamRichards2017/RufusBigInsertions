@@ -39,6 +39,7 @@ class util{
   static const std::vector<std::pair<std::string, int32_t> > countKmersFromText(const std::string &, const std::vector<std::string> &);
   static const std::vector<std::string> getClipSeqs(const BamTools::BamAlignment &);
   static const std::string getFirstClip(const BamTools::BamAlignment &);
+    
 
 
 

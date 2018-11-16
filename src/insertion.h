@@ -21,7 +21,8 @@ class insertion{
  public:
   insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignment > &, const std::string &, const std::string &);
   ~insertion();
-  const variant  getVariant();
+  const variant getVariant();
+  const std::string getCigarString();
 
  private:
 
@@ -35,10 +36,12 @@ class insertion{
   bool clipDirectionsConverge_ = false;
 
   variant variant_;
+  std::string cigarString_;
 
   void setVariant();
   void setKmerDepth(const std::vector<std::pair<std::string, int32_t> > &);
   std::vector<int32_t> kmerDepth_;
+  void setCigarString();
 
   bool firstReadRightBound_ = false;
   bool secondReadLeftBound_ = false;
