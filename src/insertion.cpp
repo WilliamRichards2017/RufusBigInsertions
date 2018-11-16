@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 #include <stdexcept>
 #include <stdlib.h>
@@ -10,6 +11,7 @@
 #include "insertion.h"
 #include "util.h"
 
+
 insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignment> & groupedContigs, const std::string & contigPath, const std::string & contigKmerPath) : groupedContigs_(groupedContigs), contigPath_(contigPath), contigKmerPath_(contigKmerPath){
 
   refData_ = util::populateRefData(contigPath_);
@@ -18,8 +20,8 @@ insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignm
   
   if(clipDirectionsConverge_){
     
-    auto lContig = util::parseContig(groupedContigs_.first);
-    auto rContig = util::parseContig(groupedContigs_.second);
+    auto lContig = util::parseContig(groupedContigs_.second);
+    auto rContig = util::parseContig(groupedContigs_.first);
     
     insertion::setBreakpoints(lContig, rContig);
     
@@ -32,17 +34,41 @@ insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignm
     std::vector<std::pair<std::string, int32_t> > lKmerCounts = util::countKmersFromText(contigKmerPath_, leftSeqKmers);
     std::vector<std::pair<std::string, int32_t> > rKmerCounts = util::countKmersFromText(contigKmerPath_, rightSeqKmers);
 
+    insertion::setVariant();
 
-    std::cout << "Printing out kmer counts for seq: " << lContig.al.QueryBases << std::endl;
+    /*std::cout << "Printing out kmer counts for seq: " << lContig.al.QueryBases << std::endl;
     for(auto l : lKmerCounts){
       std::cout << "kmer is: " << l.first << "  count is: " << l.second << std::endl;
-    }
+      }*/
    }
 }
 
 
 insertion::~insertion(){
   //get destructed
+}
+
+const std::string insertion::getVariant(){
+  return variant_;
+}
+
+void insertion::setVariant(){
+  
+  std::string refChar(1, groupedContigs_.first.AlignedBases.back());
+
+  std::cout << "refChar is " << refChar << std::endl;
+
+  std::string leftClip = util::getFirstClip(groupedContigs_.first);
+  std::string rightClip = util::getFirstClip(groupedContigs_.second);
+  
+
+  std::cout << "Left clip is: " << leftClip << std::endl;
+  std::cout << "Right clip is: " << rightClip << std::endl;
+
+  ref_ = refChar;
+  variant_ = refChar + leftClip + "NNNNN...NNNNN" + rightClip;
+  
+  std::cout << "Variant is: " << std::endl << variant_ << std::endl;
 }
 
 void insertion::findClipDirections(){
@@ -69,4 +95,8 @@ void insertion::setBreakpoints(const parsedContig lcontig, const parsedContig rc
 
     std::cout << "left breakpoint is: " << leftBreakpoint_.first << ":" << leftBreakpoint_.second;
     std::cout << "right breakpoint is: " << rightBreakpoint_.first << ":" << rightBreakpoint_.second;
+}
+
+void insertion::populateVariantString(){
+  
 }

@@ -37,6 +37,9 @@ class util{
   static const std::vector<std::string> kmerize(const std::string &, const int32_t);
   static const std::map<std::string, int32_t> countKmersFromJhash(const std::string &, const std::vector<std::string> &);
   static const std::vector<std::pair<std::string, int32_t> > countKmersFromText(const std::string &, const std::vector<std::string> &);
+  static const std::vector<std::string> getClipSeqs(const BamTools::BamAlignment &);
+  static const std::string getFirstClip(const BamTools::BamAlignment &);
+
 
 
 

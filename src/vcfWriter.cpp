@@ -5,6 +5,7 @@
 #include "vcfWriter.h"
 
 vcfWriter::vcfWriter(const insertion & i, std::fstream & vcfStream) : insertion_(insertion), vcfStream_(vcfStream){
+  
 }
 
 vcfWriter::~vcfWriter(){

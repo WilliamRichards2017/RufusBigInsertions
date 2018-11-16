@@ -14,6 +14,26 @@
 
 #include "util.h"
 
+
+
+const std::vector<std::string> util::getClipSeqs(const BamTools::BamAlignment & al){
+  std::vector<std::string> clipSeqs;
+
+  std::vector<int> clipSizes;
+  std::vector<int> readPositions;
+  std::vector<int> genomePositions;
+  const std::vector<int32_t> insertionVec = util::getInsertionVec(al);
+
+  al.GetSoftClips(clipSizes, readPositions, genomePositions);
+  for(int i = 0; i < readPositions.size(); ++i){
+    std::cout << "readPosition is: " << readPositions[i] << std::endl;
+    std::cout << "clip size is: " << clipSizes[i] << std::endl;
+    std::cout << "Clipped seq for read is: " << al.QueryBases.substr(readPositions[i], clipSizes[i]) << std::endl;
+    clipSeqs.push_back(al.QueryBases.substr(readPositions[i]+insertionVec[i], clipSizes[i]));
+  }
+  return clipSeqs;
+}
+
 std::vector<std::pair<BamTools::BamAlignment, BamTools::BamAlignment> > util::groupNearbyContigs(const std::vector<BamTools::BamAlignment> & splitAlignedContigs, const int32_t & maxDist){
 
   std::vector<std::pair<BamTools::BamAlignment, BamTools::BamAlignment> > groupedContigs;
@@ -66,6 +86,24 @@ const std::vector<int32_t> util::getInsertionVec(const BamTools::BamAlignment & 
     }
   }
   return insertionVec;
+}
+
+
+const std::string util::getFirstClip(const BamTools::BamAlignment & al){
+
+  int32_t pos = 0;
+  for(const auto c : al.CigarData){
+    if(c.Type == 'S'){
+      return al.QueryBases.substr(pos, c.Length);
+    }
+    else if(c.Type == 'M'){
+      pos += c.Length;
+    }
+    else if (c.Type == 'D'){
+      pos -= c.Length;
+    }
+  }
+  return "";
 }
 
 const parsedContig util::parseContig(const BamTools::BamAlignment & al){
