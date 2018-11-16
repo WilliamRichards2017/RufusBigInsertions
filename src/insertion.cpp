@@ -35,6 +35,12 @@ insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignm
     std::vector<std::pair<std::string, int32_t> > rKmerCounts = util::countKmersFromText(contigKmerPath_, rightSeqKmers);
 
     insertion::setVariant();
+    insertion::setKmerDepth(lKmerCounts, rKmerCounts);
+    std::cout << "Kmer Depth is: ";
+    for(const auto & k : kmerDepth_){
+      std::cout << k << '-';
+    }
+    std::cout << std::endl;
 
     /*std::cout << "Printing out kmer counts for seq: " << lContig.al.QueryBases << std::endl;
     for(auto l : lKmerCounts){
@@ -50,6 +56,16 @@ insertion::~insertion(){
 
 const std::string insertion::getVariant(){
   return variant_;
+}
+
+void insertion::setKmerDepth(const std::vector<std::pair<std::string, int32_t> > & lKmerCounts, const std::vector<std::pair<std::string, int32_t> > & rKmerCounts){
+  for(const auto & l : lKmerCounts){
+    kmerDepth_.push_back(l.second);
+  }
+  for(const auto & r : rKmerCounts){
+    kmerDepth_.push_back(r.second);
+  }
+  
 }
 
 void insertion::setVariant(){
@@ -69,6 +85,10 @@ void insertion::setVariant(){
   variant_ = refChar + leftClip + "NNNNN...NNNNN" + rightClip;
   
   std::cout << "Variant is: " << std::endl << variant_ << std::endl;
+}
+
+void setKmerDepth(){
+  
 }
 
 void insertion::findClipDirections(){

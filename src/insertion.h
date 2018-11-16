@@ -33,6 +33,8 @@ class insertion{
   std::string ref_;
   std::string variant_;
   void setVariant();
+  void setKmerDepth(const std::vector<std::pair<std::string, int32_t> > &, const std::vector<std::pair<std::string, int32_t> > &);
+  std::vector<int32_t> kmerDepth_;
 
   bool firstReadRightBound_ = false;
   bool secondReadLeftBound_ = false;
