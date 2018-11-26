@@ -26,9 +26,9 @@ const std::vector<std::string> util::getClipSeqs(const BamTools::BamAlignment & 
 
   al.GetSoftClips(clipSizes, readPositions, genomePositions);
   for(int i = 0; i < readPositions.size(); ++i){
-    std::cout << "readPosition is: " << readPositions[i] << std::endl;
-    std::cout << "clip size is: " << clipSizes[i] << std::endl;
-    std::cout << "Clipped seq for read is: " << al.QueryBases.substr(readPositions[i], clipSizes[i]) << std::endl;
+    //std::cout << "readPosition is: " << readPositions[i] << std::endl;
+    //std::cout << "clip size is: " << clipSizes[i] << std::endl;
+    //std::cout << "Clipped seq for read is: " << al.QueryBases.substr(readPositions[i], clipSizes[i]) << std::endl;
     clipSeqs.push_back(al.QueryBases.substr(readPositions[i]+insertionVec[i], clipSizes[i]));
   }
   return clipSeqs;
@@ -160,7 +160,7 @@ const int32_t util::findLongestClipMatch(const std::vector<std::string> & clips,
 
   for(auto & clip1 : clips){
     for(auto & clip2 : contig.clips){
-      std::cout << "comparing " << clip1 << " and " << clip2 << std::endl;
+      //std::cout << "comparing " << clip1 << " and " << clip2 << std::endl;
       int32_t longestSubstr = util::longestCommonSubstr(clip1, clip2);
       if(longestSubstr > longestMatch){
 	longestMatch = longestSubstr;
@@ -168,7 +168,7 @@ const int32_t util::findLongestClipMatch(const std::vector<std::string> & clips,
     }
   }
   
-  std::cout << "longest clip match is " << longestMatch << std::endl;
+  //std::cout << "longest clip match is " << longestMatch << std::endl;
   return longestMatch;
 }
 
@@ -204,7 +204,7 @@ const readEvidence util::parseRead(const BamTools::BamAlignment & al, const pars
 
 const std::vector<std::pair<int32_t, int32_t> > util::findGlobalClipCoords(const std::vector<BamTools::CigarOp> & cigar, int32_t globalPos){
   std::vector<std::pair<int32_t, int32_t> > clipCoords;
-  std::cout << "Global start pos is: " << globalPos << std::endl;
+  //std::cout << "Global start pos is: " << globalPos << std::endl;
   for(const auto it : cigar){
     if(it.Type == 'S'){
       clipCoords.push_back(std::make_pair(globalPos, globalPos+it.Length));
@@ -318,4 +318,43 @@ const std::vector<std::pair<std::string, int32_t> > util::countKmersFromText(con
     }
   }
   return kmerCounts;
+}
+
+const int32_t util::calculateModeKmerDepth(const std::vector<int32_t> & kmerDepth){
+
+  int32_t number = kmerDepth.front();
+  int32_t mode = number;
+  int32_t count = 0;
+  int32_t countMode = 0;
+  
+  for(const auto d : kmerDepth){
+    //std::cout << "Number, mode, count, countMode is: " << number << ", " << mode << ", " << count << ", " << countMode << std::endl;
+    if(d == number){
+      ++count;
+    }
+    else{
+      if (count > countMode){
+	countMode = count;
+	mode = number;
+      }
+      count = 1;
+      number = d;
+    }
+    
+  }
+  return mode;
+}
+
+const int32_t util::countKmerDepth(const std::vector<std::pair<std::string, int32_t> > & kmers){
+
+  std::vector<int32_t> kmerCounts;
+
+  for(const auto & k : kmers){
+    //std::cout <<k.first[0] << ":" << k.second << "-";                                                                                                                                                                    
+    kmerCounts.push_back(k.second);
+  }
+
+  return util::calculateModeKmerDepth(kmerCounts);
+
+
 }

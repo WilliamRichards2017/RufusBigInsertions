@@ -13,8 +13,8 @@
 #include "util.h"
 
 struct variant{
-  std::string ref;
-  std::string alt;
+  std::pair<std::string, std::string> ref;
+  std::pair<std::string, std::string> alt;
 };
 
 class insertion{
@@ -22,26 +22,29 @@ class insertion{
   insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignment > &, const std::string &, const std::string &);
   ~insertion();
   const variant getVariant();
-  const std::string getCigarString();
+  const std::vector<int32_t> getKmerDepth();
+  const std::pair<std::string, std::string> getCigarStrings();
+  std::pair<int32_t, int32_t> leftBreakpoint_ = {-1, -1};
+  std::pair<int32_t, int32_t> rightBreakpoint_ = {-1, -1};
+  std::vector<BamTools::RefData> refData_;
+  std::pair<BamTools::BamAlignment, BamTools::BamAlignment > groupedContigs_;
 
  private:
 
   std::string contigPath_;
   std::string contigKmerPath_;
-  std::pair<BamTools::BamAlignment, BamTools::BamAlignment > groupedContigs_;
-  std::vector<BamTools::RefData> refData_;
+  
   int32_t distance_ = 1000;
-  std::pair<int32_t, int32_t> leftBreakpoint_ = {-1, -1};
-  std::pair<int32_t, int32_t> rightBreakpoint_ = {-1, -1};
   bool clipDirectionsConverge_ = false;
 
   variant variant_;
-  std::string cigarString_;
+  std::string variantString_;
+  std::pair<std::string, std::string> cigarStrings_;
 
   void setVariant();
   void setKmerDepth(const std::vector<std::pair<std::string, int32_t> > &);
   std::vector<int32_t> kmerDepth_;
-  void setCigarString();
+  void setCigarStrings();
 
   bool firstReadRightBound_ = false;
   bool secondReadLeftBound_ = false;

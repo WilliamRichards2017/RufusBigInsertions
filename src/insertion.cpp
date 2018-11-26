@@ -25,13 +25,14 @@ insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignm
     
     insertion::setBreakpoints(lContig, rContig);
     insertion::setVariant();
-    insertion::setCigarString();
+    insertion::setCigarStrings();
     
-    std::vector<std::string> varSeqKmers = util::kmerize(variant_.alt, 25);
+    //std::vector<std::string> varSeqKmers = util::kmerize(variant_.alt, 25);
+    std::vector<std::string> varSeqKmers = util::kmerize(variant_.alt.first, 25);
+    std::vector<std::string> rightSeqKmers = util::kmerize(variant_.alt.second, 25);
+    varSeqKmers.insert(std::end(varSeqKmers), std::begin(rightSeqKmers), std::end(rightSeqKmers));
 
     std::vector<std::pair<std::string, int32_t> > varKmerCounts = util::countKmersFromText(contigKmerPath_, varSeqKmers);
-
-
 
     insertion::setKmerDepth(varKmerCounts);
 
@@ -53,27 +54,27 @@ const variant insertion::getVariant(){
   return variant_;
 }
 
-const std::string insertion::getCigarString(){
-  return cigarString_;
+const std::pair<std::string, std::string> insertion::getCigarStrings(){
+  return cigarStrings_;
 }
 
-void insertion::setCigarString(){
+void insertion::setCigarStrings(){
   for(const auto & l : groupedContigs_.first.CigarData){ 
-    cigarString_ += std::to_string(l.Length);
-    cigarString_ += std::to_string(l.Type);
+    cigarStrings_.first += std::to_string(l.Length);
+    cigarStrings_.first += std::to_string(l.Type);
   }
   
   for(const auto & r : groupedContigs_.second.CigarData){
-    cigarString_ += std::to_string(r.Length);
-    cigarString_ += std::to_string(r.Type);
+    cigarStrings_.second += std::to_string(r.Length);
+    cigarStrings_.second += std::to_string(r.Type);
   }
 }
 
 void insertion::setKmerDepth(const std::vector<std::pair<std::string, int32_t> > & kmerCounts){
   
-  std::cout << "kmerDepth is: " << std::endl;
+  //std::cout << "kmerDepth is: " << std::endl;
   for(const auto & k : kmerCounts){
-    std::cout <<k.first[0] << ":" << k.second << "-";
+    //std::cout <<k.first[0] << ":" << k.second << "-";
     kmerDepth_.push_back(k.second);
   }  
   std::cout << std::endl;
@@ -81,20 +82,15 @@ void insertion::setKmerDepth(const std::vector<std::pair<std::string, int32_t> >
 
 void insertion::setVariant(){
   
-  std::string refChar(1, groupedContigs_.first.AlignedBases.back());
-
-  std::cout << "refChar is " << refChar << std::endl;
-
+  std::string rRefChar(1, groupedContigs_.first.AlignedBases.back());
+  std::string lRefChar(1, groupedContigs_.second.AlignedBases.back());
+  
   std::string leftClip = util::getFirstClip(groupedContigs_.first);
   std::string rightClip = util::getFirstClip(groupedContigs_.second);
   
-
-  std::cout << "Left clip is: " << leftClip << std::endl;
-  std::cout << "Right clip is: " << rightClip << std::endl;
-
-  variant_ = {refChar, refChar + leftClip + "NNNNNNNNNN" + rightClip};
+  variant_ = {std::make_pair(lRefChar, rRefChar), std::make_pair(leftClip, rightClip)};
+  variantString_ = variant_.ref.first + variant_.alt.first + "NNNNN...NNNNN" + variant_.alt.second + variant_.ref.second;
   
-  std::cout << "Variant is: " << std::endl << variant_.ref << "->" << variant_.alt << std::endl;
 }
 
 void insertion::findClipDirections(){
@@ -125,4 +121,9 @@ void insertion::setBreakpoints(const parsedContig lcontig, const parsedContig rc
 
 void insertion::populateVariantString(){
   
+}
+
+
+const std::vector<int32_t> insertion::getKmerDepth(){
+  return kmerDepth_;
 }

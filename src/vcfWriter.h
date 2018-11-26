@@ -8,7 +8,7 @@
 #include <vector>
 
 struct genotypeField{
-  std::pair<bool, bool> GT = std::make_pair(-1,-1); //Genotype information
+  std::pair<bool, bool> GT = std::make_pair(false,false); //Genotype information
   int32_t DP = -1; // Total kmer depth
   int32_t RO = -1; // reference kmer count
   int32_t AO = -1; // Altername kmer count
@@ -21,9 +21,12 @@ struct filterField{
 struct infoField {
   std::string RN; // INFO=<ID=RN,Number=1,Type=String,Description="Name of contig that produced the call">
   int16_t MQ = -1; // INFO=<ID=MQ,Number=1,Type=Integer,Description="Mapping quality of the contig that created the call">
-  std::string cigar = ""; 
-  std::string CVT = "ME"; //Compressed variant type
-  double SB; // Strand Bias
+  std::pair<std::string, std::string> cigars; 
+  std::string CVT = "LargeInsertion"; //Compressed variant type
+  double SB = -1; // Strand Bias
+  std::string leftClip;
+  std::string rightClip;
+  
 
   //TODO - REMOVE HARD CODING WHEN HD IS POPULATED
   std::vector<int32_t> HD = {-1,-1}; // hashcount for kmers overlapping variant
@@ -38,9 +41,6 @@ struct formatField {
   int32_t DP = -1; // FORMAT=<ID=DP,Number=1,Type=Integer,Description=\"Total Kmer depth across the variant\">
   int32_t RO = -1; // FORMAT=<ID=RO,Number=1,Type=Integer,Description=\"Mode of reference kmer counts\"
   int32_t AO = -1; // FORMAT=<ID=AO,Number=1,Type=Integer,Description=\"Mode of alt kmer counts\">
-  int32_t LP = -1; // FORMAT=<ID=LP,Number=1,Type=Integer,Description=\"Number of lowcoverage parent bases\"
-  int32_t PC = -1; // FORMAT=<ID=PC,Number=1,Type=Integer,Description=\"Mode of parents coverage\">
-  float SB = -1.0; // FORMAT=<ID=SB,Number=1,Type=Float,Description=\"StrandBias\">
 };
 
 struct vcfLine {
@@ -57,7 +57,7 @@ struct vcfLine {
 
 class vcfWriter{
  public:
-  vcfWriter(const insertion &, std::fstream &);
+  vcfWriter(const insertion &, std::fstream &, const std::string &);
   ~vcfWriter();
 
   void writeVCFHeader(std::fstream &);
@@ -65,8 +65,10 @@ class vcfWriter{
 
  private:
   insertion insertion_;
-  vcfLine vcfLine_ = {};
   std::fstream & vcfStream_;
+  std::string vcfPath_;
+  vcfLine vcfLine_ = {};
+
   
   void populateVCFLine();
   void populateFilterField();
@@ -81,4 +83,4 @@ class vcfWriter{
 };
 
 
-#endif __VCF_WRITER_H__
+#endif //__VCF_WRITER_H__

@@ -37,7 +37,7 @@ std::vector<BamTools::BamAlignment> contigs::getTransContigs(){
 }
 
 void contigs::findSplitAlignedContigs(){
-  std::cout << "Inside contigs::findSplitAlignedContigs()" << std::endl;
+  //std::cout << "Inside contigs::findSplitAlignedContigs()" << std::endl;
   BamTools::BamReader reader;
   BamTools::BamAlignment al;
 
@@ -65,7 +65,7 @@ void contigs::findSplitAlignedContigs(){
     al.GetSoftClips(clipSizes, readPositions, genomePositions);  
     if(clipSizes.size() > 0 && al.Position != -1){
       //if(al.Name == "NODE_INS.1001-5000.Child.bam.generator.V2_998_L350_D12:15:4::MH0" || al.Name == "NODE_INS.1001-5000.Child.bam.generator.V2_996_L595_D18:28:6::MH0"){
-      std::cout << "found split aligned contig " << al.Name << std::endl;
+      //std::cout << "found split aligned contig " << al.Name << std::endl;
       splitAlignedContigs_.push_back(al);
       //}
     } 
@@ -91,11 +91,11 @@ void contigs::filterSplitAlignedContigs(){
   for (const auto & c : contigCountMap){
 
     if(c.second.second == 1){
-      std::cout << "Found insertion contig" << std::endl;
+      //std::cout << "Found insertion contig" << std::endl;
       insertionContigs_.push_back(c.second.first);
     }
     else if (c.second.second > 1){
-      std::cout << "Found trans contig" << std::endl;
+      //std::cout << "Found trans contig" << std::endl;
       transContigs_.push_back(c.second.first);
     }
     else {
