@@ -14,9 +14,22 @@
 
 int main(int argc, char * argv[]){
   std::string contigPath = std::string(argv[1]);
-  std::string contigKmerPath = std::string(argv[2]);
-  std::string motherKmerPath = std::string(argv[3]);
-  std::string fatherKmerPath = std::string(argv[4]);
+  std::string childRefPath = std::string(argv[2]);
+  std::string childAltPath = std::string(argv[3]);
+  std::string motherAltPath = std::string(argv[4]);
+  std::string fatherAltPath = std::string(argv[5]);
+  std::string motherRefPath = std::string(argv[6]);
+  std::string fatherRefPath = std::string(argv[7]);
+
+
+  std::vector<std::string> parentRefPaths;
+  parentRefPaths.push_back(motherRefPath);
+  parentRefPaths.push_back(fatherRefPath);
+
+  std::vector<std::string> parentAltPaths;
+  parentAltPaths.push_back(motherAltPath);
+  parentAltPaths.push_back(fatherAltPath);
+  
 
   int32_t maxDist = 100;
 
@@ -30,7 +43,7 @@ int main(int argc, char * argv[]){
   std::string vcfPath = "/uufs/chpc.utah.edu/common/home/u0401321/RufusBigInsertions/testy.vcf";
     
   for(const auto & c : groupedInsertionContigs){
-    insertion i = {c, contigPath, contigKmerPath};
+    insertion i = {c, contigPath, childAltPath, parentAltPaths, parentRefPaths};
     vcfWriter w = {i, f, vcfPath};
   }
 

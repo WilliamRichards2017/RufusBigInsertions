@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "parentGT.h"
+#include "util.h"
 
 parentGT::parentGT(std::vector<std::string> refKmers, std::vector<std::string> altKmers, std::string parentJhashPath) : refKmers_(refKmers), altKmers_(altKmers), parentJhashPath_(parentJhashPath){
   populateFields();
@@ -15,9 +16,9 @@ void parentGT::populateFields(){
   std::vector<std::pair<std::string, int32_t> > refKmerCounts = util::countKmersFromText(parentJhashPath_, refKmers_);
   std::vector<std::pair<std::string, int32_t> > altKmerCounts = util::countKmersFromText(parentJhashPath_, altKmers_);
 
-  RO_ = util::countKmerDepth(refKerCounts);
+  RO_ = util::countKmerDepth(refKmerCounts);
   AO_ = util::countKmerDepth(altKmerCounts);
-  DP = RO_ + AO_;
+  DP_ = RO_ + AO_;
 
   setGenotype();
 }
@@ -33,8 +34,9 @@ void parentGT::setGenotype(){
     genotype_ = std::make_pair(1, 1);
   }
   else {
-    std::err << "Error in setGenotype, no ref or alt counts in genotype information" << std::endl;
-    std::err << "Setting genotype to (0, 0) and proceeding" << std::endl;
+    std::cerr << "Error in setGenotype, no ref or alt counts in genotype information" << std::endl;
+    std::cerr << "Setting genotype to (0, 0) and proceeding" << std::endl;
     genotype_ = std::make_pair(0,0);
   }
+  std::cout << "Parent genotype for parent " << parentJhashPath_ << " is " << genotype_.first << ":" << genotype_.second << std::endl;
 }

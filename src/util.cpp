@@ -350,11 +350,45 @@ const int32_t util::countKmerDepth(const std::vector<std::pair<std::string, int3
   std::vector<int32_t> kmerCounts;
 
   for(const auto & k : kmers){
-    //std::cout <<k.first[0] << ":" << k.second << "-";                                                                                                                                                                    
+    //std::cout <<k.first[0] << ":" << k.second << "-";
     kmerCounts.push_back(k.second);
   }
-
   return util::calculateModeKmerDepth(kmerCounts);
 
+}
 
+const std::vector<std::string> util::split(const std::string& line, const char delim)
+{
+  std::vector<std::string> tokens;
+  std::stringstream lineStream(line);
+  std::string token;
+  while(getline(lineStream, token, delim)){
+    tokens.push_back(token);
+  }
+  return tokens;
+}
+
+const float util::calculateStrandBiasFromContigName(const std::string & contigName){
+  std::vector<std::string> tokenizedName = util::split(contigName, ':');
+
+  std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+  for(const auto & t : tokenizedName){
+    std::cout << "token is: " << t << std::endl;
+  }
+  std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+
+  float f = 0.1;
+  return f;
+}
+
+const std::string util::pullRefSequenceFromRegion(const std::pair<int32_t, int32_t> & region, const std::string & refPath, const std::vector<BamTools::RefData> & refData){
+
+  std::string fastahack = "/uufs/chpc.utah.edu/common/home/u0401321/RufusBigInsertions/bin/externals/fastahack/src/fastahack_project/tools/fastahack";
+
+  std::string cmd = fastahack + " -r " + util::getChromosomeFromRefID(region.first, refData) + ":" + std::to_string(region.second) + ".." + std::to_string(region.second + 400) + ' ' + refPath;
+  std::cout << "Executing command: " << cmd << std::endl;
+  std::string out = util::exec(cmd.c_str());
+
+  std::cout << "Returning output: " << out << std::endl;
+  return out;
 }

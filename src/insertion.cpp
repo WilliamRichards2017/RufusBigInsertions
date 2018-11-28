@@ -9,10 +9,11 @@
 #include "api/BamWriter.h"
 
 #include "insertion.h"
+#include "parentGT.h"
 #include "util.h"
 
 
-insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignment> & groupedContigs, const std::string & contigPath, const std::string & contigKmerPath) : groupedContigs_(groupedContigs), contigPath_(contigPath), contigKmerPath_(contigKmerPath){
+insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignment> & groupedContigs, const std::string & contigPath, const std::string & childAltPath, const std::vector<std::string> & parentAltPaths, const std::vector<std::string> & parentRefPaths) : groupedContigs_(groupedContigs), contigPath_(contigPath), childAltPath_(childAltPath), parentAltPaths_(parentAltPaths), parentRefPaths_(parentRefPaths){
 
   refData_ = util::populateRefData(contigPath_);
 
@@ -32,9 +33,19 @@ insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignm
     std::vector<std::string> rightSeqKmers = util::kmerize(variant_.alt.second, 25);
     varSeqKmers.insert(std::end(varSeqKmers), std::begin(rightSeqKmers), std::end(rightSeqKmers));
 
-    std::vector<std::pair<std::string, int32_t> > varKmerCounts = util::countKmersFromText(contigKmerPath_, varSeqKmers);
+    std::string refPath = "/uufs/chpc.utah.edu/common/home/u0991464/d1/home/farrelac/references/current/human_reference_v37_decoys.fa";
+
+    refSequence_ = util::pullRefSequenceFromRegion(leftBreakpoint_, refPath, refData_);
+
+
+    std::cout << "breakpoint is: " << leftBreakpoint_.first << ":" << leftBreakpoint_.second << std::endl;
+    std::cout << "refSequence is: " << refSequence_ << std::endl;
+
+    altKmers_ = varSeqKmers;
+    std::vector<std::pair<std::string, int32_t> > varKmerCounts = util::countKmersFromText(childAltPath_, varSeqKmers);
 
     insertion::setKmerDepth(varKmerCounts);
+    insertion::setParentGenotypes();
 
     std::cout << std::endl;
 
@@ -126,4 +137,12 @@ void insertion::populateVariantString(){
 
 const std::vector<int32_t> insertion::getKmerDepth(){
   return kmerDepth_;
+}
+
+void insertion::setParentGenotypes(){
+
+  for(const auto & p : parentAltPaths_){
+    parentGT gt = {altKmers_, altKmers_, p};
+    parentGenotypes_.push_back(gt);
+  }
 }

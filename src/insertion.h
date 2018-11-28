@@ -9,7 +9,7 @@
 
 #include "api/BamMultiReader.h"
 #include "api/BamWriter.h"
-
+#include "parentGT.h"
 #include "util.h"
 
 struct variant{
@@ -19,7 +19,7 @@ struct variant{
 
 class insertion{
  public:
-  insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignment > &, const std::string &, const std::string &);
+  insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignment > &, const std::string &, const std::string &, const std::vector<std::string> &, const std::vector<std::string> &);
   ~insertion();
   const variant getVariant();
   const std::vector<int32_t> getKmerDepth();
@@ -32,14 +32,22 @@ class insertion{
  private:
 
   std::string contigPath_;
-  std::string contigKmerPath_;
+  std::string childRefPath_;
+  std::string childAltPath_;
+  std::vector<std::string> parentRefPaths_;
+  std::vector<std::string> parentAltPaths_;
   
   int32_t distance_ = 1000;
   bool clipDirectionsConverge_ = false;
 
   variant variant_;
+
+  std::string refSequence_;
   std::string variantString_;
   std::pair<std::string, std::string> cigarStrings_;
+
+  std::vector<std::string> altKmers_;
+  std::vector<std::string> refKmers_;
 
   void setVariant();
   void setKmerDepth(const std::vector<std::pair<std::string, int32_t> > &);
@@ -51,11 +59,13 @@ class insertion{
 
   void findClipDirections();
 
-  BamTools::BamRegion breakpointRegion_;
   std::vector<BamTools::BamAlignment> overlappingReads_;
 
   void setBreakpoints(const parsedContig, const parsedContig);
   void populateVariantString();
+
+  void setParentGenotypes();
+  std::vector<parentGT> parentGenotypes_;
     
   
   

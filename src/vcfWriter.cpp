@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+
+#include "parentGT.h"
 #include "vcfWriter.h"
 
 vcfWriter::vcfWriter(const insertion & i, std::fstream & vcfStream, const std::string & vcfPath) : insertion_(i), vcfStream_(vcfStream), vcfPath_(vcfPath){
@@ -59,6 +61,8 @@ void vcfWriter::populateInfoField(){
   vcfLine_.INFO.cigars = insertion_.getCigarStrings();
   vcfLine_.INFO.leftClip = insertion_.getVariant().alt.first;
   vcfLine_.INFO.rightClip = insertion_.getVariant().alt.second;
+
+  //vcfLine_.INFO.SB = util::calculateStrandBiasFromContigName(insertion_.groupedContigs_.first.Name);
   //
 }
 
