@@ -135,5 +135,7 @@ void insertion::setAltKmers(){
 
 
 void insertion::setRefSequence(){
-  refSequence_ = util::pullRefSequenceFromRegion(leftBreakpoint_, refPath_, refData_);
+  int32_t refSize = groupedContigs_.first.QueryBases.size();
+  std::cout << "Contig length is: " << refSize << std::endl;
+  refSequence_ = util::pullRefSequenceFromRegion(rightBreakpoint_, refPath_, refData_, refSize);
 }
