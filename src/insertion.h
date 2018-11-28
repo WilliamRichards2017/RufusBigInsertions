@@ -31,6 +31,7 @@ class insertion{
 
  private:
 
+  std::string refPath_ = "/uufs/chpc.utah.edu/common/home/u0991464/d1/home/farrelac/references/current/human_reference_v37_decoys.fa";
   std::string contigPath_;
   std::string childRefPath_;
   std::string childAltPath_;
@@ -50,9 +51,11 @@ class insertion{
   std::vector<std::string> refKmers_;
 
   void setVariant();
-  void setKmerDepth(const std::vector<std::pair<std::string, int32_t> > &);
+  void setKmerDepth();
   std::vector<int32_t> kmerDepth_;
   void setCigarStrings();
+  void setAltKmers();
+  void setRefSequence();
 
   bool firstReadRightBound_ = false;
   bool secondReadLeftBound_ = false;
@@ -61,8 +64,7 @@ class insertion{
 
   std::vector<BamTools::BamAlignment> overlappingReads_;
 
-  void setBreakpoints(const parsedContig, const parsedContig);
-  void populateVariantString();
+  void setBreakpoints();
 
   void setParentGenotypes();
   std::vector<parentGT> parentGenotypes_;
