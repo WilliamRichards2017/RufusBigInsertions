@@ -6,7 +6,7 @@
 
 class parentGT{
  public:
-  parentGT(std::vector<std::string>, std::vector<std::string>, std::string);
+  parentGT(std::vector<std::string>, std::vector<std::string>, std::string, std::string);
   ~parentGT();
 
   std::pair<bool, bool> genotype_;
@@ -19,7 +19,8 @@ class parentGT{
   void setGenotype();
   std::vector<std::string> refKmers_;
   std::vector<std::string> altKmers_;
-  std::string parentJhashPath_;
+  std::string parentRefPath_;
+  std::string parentAltPath_;
   
 };
 

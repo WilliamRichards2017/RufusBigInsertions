@@ -43,7 +43,7 @@ class util{
   static const int32_t countKmerDepth(const std::vector<std::pair<std::string, int32_t> > &);
   static const std::vector<std::string> split(const std::string &, const char);
   static const float calculateStrandBiasFromContigName(const std::string &);
-  static const std::string pullRefSequenceFromRegion(const std::pair<int32_t, int32_t> &, const std::string &, const std::vector<BamTools::RefData> &);
+  static const std::string pullRefSequenceFromRegion(const std::pair<int32_t, int32_t> &, const std::string &, const std::vector<BamTools::RefData> &, const int32_t &);
     
 
 

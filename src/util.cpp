@@ -381,11 +381,11 @@ const float util::calculateStrandBiasFromContigName(const std::string & contigNa
   return f;
 }
 
-const std::string util::pullRefSequenceFromRegion(const std::pair<int32_t, int32_t> & region, const std::string & refPath, const std::vector<BamTools::RefData> & refData){
+const std::string util::pullRefSequenceFromRegion(const std::pair<int32_t, int32_t> & region, const std::string & refPath, const std::vector<BamTools::RefData> & refData, const int32_t & refSize){
 
   std::string fastahack = "/uufs/chpc.utah.edu/common/home/u0401321/RufusBigInsertions/bin/externals/fastahack/src/fastahack_project/tools/fastahack";
 
-  std::string cmd = fastahack + " -r " + util::getChromosomeFromRefID(region.first, refData) + ":" + std::to_string(region.second) + ".." + std::to_string(region.second + 400) + ' ' + refPath;
+  std::string cmd = fastahack + " -r " + util::getChromosomeFromRefID(region.first, refData) + ":" + std::to_string(region.second) + ".." + std::to_string(region.second + refSize) + ' ' + refPath;
   std::cout << "Executing command: " << cmd << std::endl;
   std::string out = util::exec(cmd.c_str());
 

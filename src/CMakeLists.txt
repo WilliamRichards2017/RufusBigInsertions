@@ -10,6 +10,7 @@ add_library(rufus_big_insertions_core STATIC
 	util.cpp
 	contigs.cpp
 	insertion.cpp
+	parentGT.cpp
 )
 
 set(CORE_LIB rufus_big_insertions_core CACHE STRING "")

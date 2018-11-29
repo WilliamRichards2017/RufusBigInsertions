@@ -118,8 +118,13 @@ const std::vector<int32_t> insertion::getKmerDepth(){
 
 void insertion::setParentGenotypes(){
 
-  for(const auto & p : parentAltPaths_){
-    parentGT gt = {altKmers_, altKmers_, p};
+  /*for(const auto & p : parentAltPaths_){
+    parentGT gt = {refKmers_, altKmers_, p};
+    parentGenotypes_.push_back(gt);
+    }*/
+
+  for(unsigned u = 0; u < parentRefPaths_.size(); ++u){
+    parentGT gt = {refKmers_, altKmers_, parentRefPaths_[u], parentAltPaths_[u]};
     parentGenotypes_.push_back(gt);
   }
 }
