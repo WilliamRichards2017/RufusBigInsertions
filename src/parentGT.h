@@ -7,6 +7,7 @@
 class parentGT{
  public:
   parentGT(std::vector<std::string>, std::vector<std::string>, std::string, std::string);
+  parentGT();
   ~parentGT();
 
   std::pair<bool, bool> genotype_;

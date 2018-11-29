@@ -13,7 +13,7 @@
 #include "util.h"
 
 
-insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignment> & groupedContigs, const std::string & contigPath, const std::string & childAltPath, const std::vector<std::string> & parentAltPaths, const std::vector<std::string> & parentRefPaths) : groupedContigs_(groupedContigs), contigPath_(contigPath), childAltPath_(childAltPath), parentAltPaths_(parentAltPaths), parentRefPaths_(parentRefPaths){
+insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignment> & groupedContigs, const std::string & contigPath, const std::string & probandAltPath, const std::string & probandRefPath, const std::vector<std::string> & parentAltPaths, const std::vector<std::string> & parentRefPaths) : groupedContigs_(groupedContigs), contigPath_(contigPath), probandAltPath_(probandAltPath), probandRefPath_(probandRefPath), parentAltPaths_(parentAltPaths), parentRefPaths_(parentRefPaths){
 
   refData_ = util::populateRefData(contigPath_);
   insertion::findClipDirections();
@@ -22,11 +22,11 @@ insertion::insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignm
     
     insertion::setBreakpoints();
     insertion::setVariant();
-    insertion::setCigarStrings();
-    insertion::setAltKmers();
     insertion::setRefSequence();
+    insertion::setAltKmers();
+    insertion::setCigarStrings();
     insertion::setKmerDepth();
-    insertion::setParentGenotypes();
+    insertion::setGenotypes();
   }
 }
 
@@ -51,6 +51,8 @@ void insertion::setCigarStrings(){
     cigarStrings_.first += std::to_string(l.Length);
     cigarStrings_.first += std::to_string(l.Type);
   }
+
+  std::cout << 
   
   for(const auto & r : groupedContigs_.second.CigarData){
     cigarStrings_.second += std::to_string(r.Length);
@@ -60,14 +62,14 @@ void insertion::setCigarStrings(){
 
 
 void insertion::setKmerDepth(){
-  std::cout << "inside setKmerDepth" << std::endl;
-  std::vector<std::pair<std::string, int32_t> > varKmerCounts = util::countKmersFromText(childAltPath_, altKmers_);
+  //std::cout << "inside setKmerDepth" << std::endl;
+  std::vector<std::pair<std::string, int32_t> > varKmerCounts = util::countKmersFromText(probandAltPath_, altKmers_);
   
   for(const auto & k : varKmerCounts){
-    std::cout << "pushing back kmer depth of: " << k.second << std::endl;
+    //std::cout << "pushing back kmer depth of: " << k.second << std::endl;
     kmerDepth_.push_back(k.second);
   }  
-  std::cout << "Leaving insertion::setKmerDepth" << std::endl;
+  //std::cout << "Leaving insertion::setKmerDepth" << std::endl;
 }
 
 
@@ -110,8 +112,8 @@ void insertion::setBreakpoints(){
   rightBreakpoint_ = std::make_pair(rContig.al.RefID, rContig.al.Position);
   leftBreakpoint_ = std::make_pair(lContig.al.RefID, lContig.al.GetEndPosition());
   
-  std::cout << "left breakpoint is: " << leftBreakpoint_.first << ":" << leftBreakpoint_.second;
-  std::cout << "right breakpoint is: " << rightBreakpoint_.first << ":" << rightBreakpoint_.second;
+  std::cout << "left breakpoint is: " << leftBreakpoint_.first << ":" << leftBreakpoint_.second << std::endl;
+  std::cout << "right breakpoint is: " << rightBreakpoint_.first << ":" << rightBreakpoint_.second << std::endl;
 }
 
 
@@ -119,17 +121,17 @@ const std::vector<int32_t> insertion::getKmerDepth(){
   return kmerDepth_;
 }
 
-void insertion::setParentGenotypes(){
+void insertion::setGenotypes(){
+ 
 
-  std::cout << "inside setParentGenotype" << std::endl;
+  parentGT proband = {refKmers_, altKmers_, probandRefPath_, probandAltPath_};
+  probandGenotype_ = proband;
 
-  /*for(const auto & p : parentAltPaths_){
-    parentGT gt = {refKmers_, altKmers_, p};
-    parentGenotypes_.push_back(gt);
-    }*/
+  std::cout << "Proband.AO_ is: " << probandGenotype_.AO_ << std::endl;
+  std::cout << "Proband.RO_ is: " << probandGenotype_.RO_ << std::endl;
 
   for(unsigned u = 0; u < parentRefPaths_.size(); ++u){
-
+    
     std::cout << "construcing new parent genotype" << std::endl;
     std::cout << "refKmers_.size() is: " << refKmers_.size() << std::endl;
     std::cout << "altKmers_.size() is: " << altKmers_.size() << std::endl;
@@ -139,15 +141,24 @@ void insertion::setParentGenotypes(){
     parentGenotypes_.push_back(gt);
     std::cout << "pushed back parent genotype" << std::endl;
   }
+  
 }
 
 
 void insertion::setAltKmers(){
-  std::vector<std::string> varSeqKmers = util::kmerize(variant_.alt.first, 25);
-  std::vector<std::string> rightSeqKmers = util::kmerize(variant_.alt.second, 25);
+  std::cout << "Inside setAltKmers" << std::endl;
+  std::cout << "variant leftClip is: " << variant_.alt.first << std::endl;
+  std::cout << "variant rightClip is: " << variant_.alt.second << std::endl;
 
+  std::vector<std::string> varSeqKmers = util::kmerize(variant_.alt.first, 25);
+  std::cout << "first varSeqKmers.size() is: " << varSeqKmers.size() << std::endl;
+  std::vector<std::string> rightSeqKmers = util::kmerize(variant_.alt.second, 25);
   varSeqKmers.insert(std::end(varSeqKmers), std::begin(rightSeqKmers), std::end(rightSeqKmers));
+
+  std::cout << "second varSeqKmers.size() is: " << varSeqKmers.size() << std::endl;
+
   altKmers_ = varSeqKmers;
+  std::cout << "altKmers_.size() is: " << altKmers_.size() << std::endl;
 }
 
 
@@ -155,4 +166,5 @@ void insertion::setRefSequence(){
   int32_t refSize = groupedContigs_.first.QueryBases.size();
   std::cout << "Contig length is: " << refSize << std::endl;
   refSequence_ = util::pullRefSequenceFromRegion(rightBreakpoint_, refPath_, refData_, refSize);
+  refKmers_ = util::kmerize(refSequence_, 25);
 }

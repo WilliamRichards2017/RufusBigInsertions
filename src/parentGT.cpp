@@ -8,6 +8,13 @@ parentGT::parentGT(std::vector<std::string> refKmers, std::vector<std::string> a
   populateFields();
 }
 
+parentGT::parentGT(){
+  refKmers_ = {};
+  altKmers_ = {};
+  parentRefPath_ = {};
+  parentAltPath_ = {};
+}
+
 parentGT::~parentGT(){
 }
 
@@ -27,10 +34,10 @@ void parentGT::setGenotype(){
   if(RO_ > 0 && AO_ > 0){
     genotype_ = std::make_pair(1, 0);
   }
-  else if(RO_ > 0){
+  else if(RO_ > 0 and AO_ == 0){
     genotype_ = std::make_pair(0, 0);
   }
-  else if(AO_ > 0){
+  else if(AO_ > 0 and RO_ == 0){
     genotype_ = std::make_pair(1, 1);
   }
   else {

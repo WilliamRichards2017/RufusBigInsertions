@@ -310,23 +310,23 @@ const std::vector<std::pair<std::string, int32_t> > util::countKmersFromText(con
   }
 
   for(auto k : kmers){
-    std::cout << "looking up kmer: " << k << std::endl;
+    //std::cout << "looking up kmer: " << k << std::endl;
     auto it = kmerMap.find(k);
     auto revIt = kmerMap.find(util::revComp(k));
     if(it != kmerMap.end()){
       kmerCounts.push_back(std::make_pair(it->first, it->second));
-      std::cout << "found kmer in map" << std::endl;
+      //std::cout << "found kmer in map" << std::endl;
     }
     else if(revIt != kmerMap.end()){
       kmerCounts.push_back(std::make_pair(k, revIt->second));
-      std::cout << "found revComp(kmer) in map" << std::endl;
+      //std::cout << "found revComp(kmer) in map" << std::endl;
     }
     else{
-      std::cout << "else statement" << std::endl;
+      //std::cout << "else statement" << std::endl;
       kmerCounts.push_back(std::make_pair(k, 0));
     }
   }
-  std::cout << "Returning kmerCounts with size of" << kmerCounts.size() << std::endl;
+  //std::cout << "Returning kmerCounts with size of" << kmerCounts.size() << std::endl;
   return kmerCounts;
 }
 

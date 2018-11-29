@@ -35,6 +35,7 @@ void vcfWriter::writeVCFLine(){
   vcfWriter::writeVCFFilterField();
   vcfWriter::writeVCFInfoField();
   vcfWriter::writeVCFFormatField();
+  vcfStream_ << std::endl;
 }
 
 void vcfWriter::populateVCFLine(){

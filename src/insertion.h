@@ -19,7 +19,9 @@ struct variant{
 
 class insertion{
  public:
-  insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignment > &, const std::string &, const std::string &, const std::vector<std::string> &, const std::vector<std::string> &);
+  insertion(const std::pair<BamTools::BamAlignment, BamTools::BamAlignment > & groupedContigs, const std::string & contigPath,
+	    const std::string & probandAltPath, const std::string & probandRefPath, 
+	    const std::vector<std::string> & parentAltPaths, const std::vector<std::string> & parentRefPaths);
   ~insertion();
   const variant getVariant();
   const std::vector<int32_t> getKmerDepth();
@@ -33,8 +35,8 @@ class insertion{
 
   std::string refPath_ = "/uufs/chpc.utah.edu/common/home/u0991464/d1/home/farrelac/references/current/human_reference_v37_decoys.fa";
   std::string contigPath_;
-  std::string childRefPath_;
-  std::string childAltPath_;
+  std::string probandRefPath_;
+  std::string probandAltPath_;
   std::vector<std::string> parentRefPaths_;
   std::vector<std::string> parentAltPaths_;
   
@@ -66,9 +68,9 @@ class insertion{
 
   void setBreakpoints();
 
-  void setParentGenotypes();
+  void setGenotypes();
+  parentGT probandGenotype_ = {};
   std::vector<parentGT> parentGenotypes_;
-    
   
   
 };
