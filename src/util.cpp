@@ -290,6 +290,11 @@ const std::vector<std::pair<std::string, int32_t> > util::countKmersFromText(con
   std::ifstream file(textPath);
   std::string line;
 
+  std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+  std::cout << "inside util::countKmersFromText" << std::endl;
+  std::cout << "textPath is: " << textPath << std::endl;
+  std::cout << "size of kmerVec to count from is: " << kmers.size() << std::endl;
+  std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
 
   std::vector<std::pair<std::string, int32_t> > kmerCounts;
   std::map<std::string, int32_t> kmerMap;
@@ -305,23 +310,31 @@ const std::vector<std::pair<std::string, int32_t> > util::countKmersFromText(con
   }
 
   for(auto k : kmers){
+    std::cout << "looking up kmer: " << k << std::endl;
     auto it = kmerMap.find(k);
     auto revIt = kmerMap.find(util::revComp(k));
     if(it != kmerMap.end()){
       kmerCounts.push_back(std::make_pair(it->first, it->second));
+      std::cout << "found kmer in map" << std::endl;
     }
     else if(revIt != kmerMap.end()){
       kmerCounts.push_back(std::make_pair(k, revIt->second));
+      std::cout << "found revComp(kmer) in map" << std::endl;
     }
     else{
+      std::cout << "else statement" << std::endl;
       kmerCounts.push_back(std::make_pair(k, 0));
     }
   }
+  std::cout << "Returning kmerCounts with size of" << kmerCounts.size() << std::endl;
   return kmerCounts;
 }
 
 const int32_t util::calculateModeKmerDepth(const std::vector<int32_t> & kmerDepth){
 
+  if(kmerDepth.size() == 0){
+    return -1;
+  }
   int32_t number = kmerDepth.front();
   int32_t mode = number;
   int32_t count = 0;
@@ -354,6 +367,7 @@ const int32_t util::countKmerDepth(const std::vector<std::pair<std::string, int3
     kmerCounts.push_back(k.second);
   }
   return util::calculateModeKmerDepth(kmerCounts);
+  //return 4;
 
 }
 

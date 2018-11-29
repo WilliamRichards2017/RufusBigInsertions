@@ -60,11 +60,14 @@ void insertion::setCigarStrings(){
 
 
 void insertion::setKmerDepth(){
+  std::cout << "inside setKmerDepth" << std::endl;
   std::vector<std::pair<std::string, int32_t> > varKmerCounts = util::countKmersFromText(childAltPath_, altKmers_);
   
   for(const auto & k : varKmerCounts){
+    std::cout << "pushing back kmer depth of: " << k.second << std::endl;
     kmerDepth_.push_back(k.second);
   }  
+  std::cout << "Leaving insertion::setKmerDepth" << std::endl;
 }
 
 
@@ -118,14 +121,23 @@ const std::vector<int32_t> insertion::getKmerDepth(){
 
 void insertion::setParentGenotypes(){
 
+  std::cout << "inside setParentGenotype" << std::endl;
+
   /*for(const auto & p : parentAltPaths_){
     parentGT gt = {refKmers_, altKmers_, p};
     parentGenotypes_.push_back(gt);
     }*/
 
   for(unsigned u = 0; u < parentRefPaths_.size(); ++u){
+
+    std::cout << "construcing new parent genotype" << std::endl;
+    std::cout << "refKmers_.size() is: " << refKmers_.size() << std::endl;
+    std::cout << "altKmers_.size() is: " << altKmers_.size() << std::endl;
+    std::cout << "parentRefPaths_[u] is: " << parentRefPaths_[u] << std::endl;
+    std::cout << "parentAltPaths_[u] is: " << parentAltPaths_[u] << std::endl;
     parentGT gt = {refKmers_, altKmers_, parentRefPaths_[u], parentAltPaths_[u]};
     parentGenotypes_.push_back(gt);
+    std::cout << "pushed back parent genotype" << std::endl;
   }
 }
 
